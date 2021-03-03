@@ -13,11 +13,13 @@ import numpy as np
 import random
 
 
-LIM_CART_POSITION = 2.4
-LIM_CART_VELOCITY = 1.0
-LIM_POLE_ANGLE = 12.0
-LIM_POLE_ROTATION = 25
+# These are the limits we use for the observation values
+LIM_CART_POSITION = 2.4 # real: 2.4
+LIM_CART_VELOCITY = 1.0 # real: inf
+LIM_POLE_ANGLE = 12.0   # real: 48
+LIM_POLE_ROTATION = 25  # real: inf
 
+# These are the step sizes we use
 STEP_CART_POSITION = 0.01
 STEP_CART_VELOCITY = 0.01
 STEP_POLE_ANGLE = 0.1
@@ -28,22 +30,26 @@ NUMSTEPS_CART_VELOCITY = int((LIM_CART_VELOCITY * 2) / STEP_CART_VELOCITY)
 NUMSTEPS_POLE_ANGLE = int((LIM_POLE_ANGLE * 2) / STEP_POLE_ANGLE)
 NUMSTEPS_POLE_ROTATION = int((LIM_POLE_ROTATION * 2) / STEP_POLE_ROTATION)
 
-print(NUMSTEPS_CART_POSITION)
-print(NUMSTEPS_CART_VELOCITY)
-print(NUMSTEPS_POLE_ANGLE)
-print(NUMSTEPS_POLE_ROTATION)
-
-
-
 STATE_SIZE = NUMSTEPS_CART_POSITION * NUMSTEPS_CART_VELOCITY * NUMSTEPS_POLE_ANGLE * NUMSTEPS_POLE_ROTATION
-ACTION_SIZE = 2
+ACTION_SIZE = 2 # Two actions, 0=push_left, 1=push_right
 
-gamma = 0.7 # discount factor
-alpha = 0.2 # learning rate
-epsilon = 0.1 # epsilon greedy
+print("Total matrix size: {}x{}".format(STATE_SIZE, ACTION_SIZE))
+
+# Q-learning parameters
+gamma = 0.7     # discount factor
+alpha = 0.2     # learning rate
+epsilon = 0.1   # epsilon greedy
 
 
 def discretize(observation) -> int: # Maybe reject values outside selected space, maybe increase precision
+    """Map an observation to a unique index, to use for the Q-table
+
+    Args:
+        observation (ndarray[4]): [position of cart, velocity of cart, angle of pole, rotation rate of pole]
+
+    Returns:
+        int: index based on ordering of the elements in their respective spaces
+    """    
     cart_position, cart_velocity, pole_angle, pole_rotation = observation
     
     # calculate orders first
@@ -80,9 +86,6 @@ for episode in range(1000000):
 
         next_state, reward, done, info = env.step(action) # invoke Gym
         next_state_index = discretize(next_state)
-        # print("{}, {}".format(state, state_index))
-        # print("{}, {}".format(next_state, next_state_index))
-        # print("")
         next_max = np.max(Q[next_state_index])
         old_value = Q[state_index, action]
         new_value = old_value + alpha * (reward + gamma * next_max - old_value)
