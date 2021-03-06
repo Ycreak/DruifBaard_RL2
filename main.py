@@ -1,12 +1,9 @@
-# On Mac:
+# Cartpole api: https://github.com/openai/gym/wiki/CartPole-v0
+
+# What to install on Mac:
 #   pip3 install gym
 #   brew install glfw3
 #   brew install glew
-
-# observation --> 4-tuple: [position of cart, velocity of cart, angle of pole, rotation rate of pole]
-# reward --> always 1: for every step the pole does not fall
-# done --> boolean: becomes true if the pole is >12degrees
-# info --> for debugging
 
 import gym
 import numpy as np
@@ -32,8 +29,6 @@ NUMSTEPS_POLE_ROTATION = int((LIM_POLE_ROTATION * 2) / STEP_POLE_ROTATION)
 
 STATE_SIZE = NUMSTEPS_CART_POSITION * NUMSTEPS_CART_VELOCITY * NUMSTEPS_POLE_ANGLE * NUMSTEPS_POLE_ROTATION
 ACTION_SIZE = 2 # Two actions, 0=push_left, 1=push_right
-
-print("Total matrix size: {}x{}".format(STATE_SIZE, ACTION_SIZE))
 
 # Q-learning parameters
 gamma = 0.7     # discount factor
@@ -64,38 +59,88 @@ def discretize(observation) -> int: # Maybe reject values outside selected space
     index = index + NUMSTEPS_CART_POSITION * NUMSTEPS_CART_VELOCITY * NUMSTEPS_POLE_ANGLE * pole_rotation
     return index
 
-# The matrix
-Q = np.zeros([STATE_SIZE, ACTION_SIZE])
+def Q_learning():
+    # The matrix
+    Q = np.zeros([STATE_SIZE, ACTION_SIZE])
 
-env = gym.make('CartPole-v0')
-env.reset()
+    print("Total matrix size: {}x{}".format(STATE_SIZE, ACTION_SIZE))
+    print_per_n = 1000
 
-total_timesteps = 0
-for episode in range(1000000):
-    done = False
-    total_reward = 0
-    state = env.reset()
-    state_index = discretize(state)
-    t = 0
-    while not done:
-        #env.render()
-        if random.uniform(0, 1) < epsilon:
-            action = env.action_space.sample() # Explore state space
-        else:
-            action = np.argmax(Q[state_index]) # Exploit learned values
+    env = gym.make('CartPole-v0')
+    env.reset()
 
-        next_state, reward, done, info = env.step(action) # invoke Gym
-        next_state_index = discretize(next_state)
-        next_max = np.max(Q[next_state_index])
-        old_value = Q[state_index, action]
-        new_value = old_value + alpha * (reward + gamma * next_max - old_value)
-        Q[state_index, action] = new_value
-        total_reward += reward
-        state = next_state
-        state_index = next_state_index
-        t = t + 1
-        total_timesteps = total_timesteps + 1
-    if episode % 1000 == 0:
-        print("Episode finished after {} timesteps".format(t+1))
-        print("Average timesteps {}".format(total_timesteps / (episode+1)))
-env.close()
+    # observation --> 4-tuple: [position of cart, velocity of cart, angle of pole, rotation rate of pole]
+    # reward --> always 1: for every step the pole does not fall
+    # done --> boolean: becomes true if the pole is >12degrees
+    # info --> for debugging
+
+    total_timesteps = 0
+    total_timesteps_n_episodes = 0
+    for episode in range(1000000):
+        done = False
+        t = 0
+
+        # Initialize state
+        state = env.reset()
+        state_index = discretize(state)
+        
+        # We are done when the pole angle >= 12 degrees or we solved the problem
+        while not done:
+            if random.uniform(0, 1) < epsilon:
+                action = env.action_space.sample() # Explore state space
+            else:
+                action = np.argmax(Q[state_index]) # Exploit learned values
+
+            next_state, reward, done, info = env.step(action) # invoke Gym
+            next_state_index = discretize(next_state)
+            next_max = np.max(Q[next_state_index])
+            old_value = Q[state_index, action]
+            new_value = old_value + alpha * (reward + gamma * next_max - old_value)
+            Q[state_index, action] = new_value
+            state = next_state
+            state_index = next_state_index
+            t = t + 1
+            total_timesteps = total_timesteps + 1
+            total_timesteps_n_episodes = total_timesteps_n_episodes + 1
+
+        # Print statistics
+        if episode % print_per_n == 0:
+            print("Episode {} finished after {} timesteps".format(episode, t+1))
+            print("Average timesteps {}".format(total_timesteps / (episode+1)))
+            print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
+            total_timesteps_n_episodes = 0
+    env.close()
+
+# For comparison
+def random_actions():
+    env = gym.make('CartPole-v0')
+    env.reset()
+
+    total_timesteps = 0
+    for episode in range(1000000):
+        done = False
+        t = 0
+        
+        # Initialize state
+        state = env.reset()
+
+        while not done:
+            action = env.action_space.sample()
+            next_state, reward, done, info = env.step(action)
+            state = next_state
+            t = t + 1
+            total_timesteps = total_timesteps + 1
+        # Print statistics
+        if episode % 1000 == 0:
+            print("Episode {} finished after {} timesteps".format(episode, t+1))
+            print("Average timesteps {}\n".format(total_timesteps / (episode+1)))
+        
+    env.close()
+
+def main():
+    #random_actions()
+    Q_learning()
+    exit()
+
+if __name__ == "__main__":
+    main()
