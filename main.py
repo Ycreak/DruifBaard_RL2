@@ -1,3 +1,10 @@
+# Reinforcement Learning
+# Leiden University 2021
+# Assignment 2
+# Philippe Bors S1773585
+# Job van der Zwaag S1893378
+# Luuk Nolden S1370898
+
 # Cartpole api: https://github.com/openai/gym/wiki/CartPole-v0
 
 # What to install on Mac:
