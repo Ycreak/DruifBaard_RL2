@@ -16,6 +16,7 @@ import gym
 import numpy as np
 import random
 
+# pip3 install -r requirements.txt
 
 # These are the limits we use for the observation values
 LIM_CART_POSITION = 2.4 # real: 2.4
