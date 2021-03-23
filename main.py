@@ -81,7 +81,7 @@ def main(argv):
     alpha = 0.2     # learning rate
     epsilon = 0.1   # epsilon greedy
     
-    iterations = 1e4
+    iterations = 1e5
 
     # Substantiate Cart in order to pass to other functions
     cart = Cart()
@@ -109,6 +109,7 @@ def main(argv):
 
         elif arg == "exp1":
             # Here we pitch Random versus Tabular
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_rnd = random_actions.main(gym, exp, iterations)
 
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
@@ -122,32 +123,74 @@ def main(argv):
             exp.Create_line_plot(result, 'filename')
 
         elif arg == "exp2":
-            
+            # Here we compare results if parameters are tweaked
             result = exp.df
 
             epsilon_list = [0.01, 0.1, 1]
+            alpha_list = [0.2, 0.5, 0.8]
+            gamma_list = [0.1, 0.5, 0.7]
             
             for epsilon in epsilon_list:
-                # Start new experiment
+                # Start new experiment and run it
                 exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-                # Run it
                 df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
-                
+                # Provide the correct collumn name
                 ep_col_name = 'timesteps_e_' + str(epsilon)
-
                 df_tab = df_tab.rename({'avg_timesteps': ep_col_name}, axis=1)
-
+                # Merge the new df with the old one
                 result = pd.merge(df_tab, result, how="left", on='episodes')
-                
+            # Drop the column we do not need    
             result = result.drop(['avg_timesteps'], axis=1) 
-            
-            print(result)
-
+            # Create the plot
             exp.Create_line_plot(result, 'filename')
+            result = result[0:0]
 
-            # print(result)
-            exit(0)
+            for alpha in alpha_list:
+                # Start new experiment and run it
+                exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+                df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+                # Provide the correct collumn name
+                a_col_name = 'timesteps_a_' + str(alpha)
+                df_tab = df_tab.rename({'avg_timesteps': a_col_name}, axis=1)
+                # Merge the new df with the old one
+                result = pd.merge(df_tab, result, how="left", on='episodes')
+            # Drop the column we do not need    
+            result = result.drop(['avg_timesteps'], axis=1) 
+            # Create the plot
+            exp.Create_line_plot(result, 'alpha_experiment')
+            result = result[0:0]
 
+            for gamma in gamma_list:
+                # Start new experiment and run it
+                exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+                df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+                # Provide the correct collumn name
+                g_col_name = 'timesteps_g_' + str(gamma)
+                df_tab = df_tab.rename({'avg_timesteps': g_col_name}, axis=1)
+                # Merge the new df with the old one
+                result = pd.merge(df_tab, result, how="left", on='episodes')
+            # Drop the column we do not need    
+            result = result.drop(['avg_timesteps'], axis=1) 
+            # Create the plot
+            exp.Create_line_plot(result, 'gamma_experiment')
+            result = result[0:0]
+
+            # exit(0)
+        elif arg == "exp3":
+            # Pitch Tabular versus Q
+            pass
+
+        elif arg == "exp4":
+            # MCTS and tweaks
+            pass
+
+        elif arg == "exp5":
+            # MCTS versus Q
+            pass
+
+        elif arg == "exp6":
+            # Placeholder
+            pass
 
         else:
             print("Invalid argument.")

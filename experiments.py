@@ -46,5 +46,5 @@ class Experiment_episode_timesteps:
     # To make X axis nice integers
     # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-    plt.show()
+    # plt.show()
     plt.savefig('plots/{0}-{1}.png'.format(filename, datetime.datetime.now().strftime("%H:%M:%S")))
