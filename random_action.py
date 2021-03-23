@@ -1,12 +1,16 @@
+
 class Random_actions:
 
-    def __init__(self, gym):
+    # def __init__(self, gym, exp, iterations):
+    #     pass
 
+    def main(self, gym, exp, iterations):
+    
         env = gym.make('CartPole-v0')
         env.reset()
 
         total_timesteps = 0
-        for episode in range(1000000):
+        for episode in range(int(iterations)):
             done = False
             t = 0
             
@@ -21,7 +25,17 @@ class Random_actions:
                 total_timesteps = total_timesteps + 1
             # Print statistics
             if episode % 1000 == 0:
+                avg_timesteps = total_timesteps / (episode+1) 
+                
                 print("Episode {} finished after {} timesteps".format(episode, t+1))
-                print("Average timesteps {}\n".format(total_timesteps / (episode+1)))
+                print("Average timesteps {}\n".format(avg_timesteps))
             
+                exp.Episode_time(episode, avg_timesteps)
+
+
+
+
         env.close()
+        
+        return exp.df
+

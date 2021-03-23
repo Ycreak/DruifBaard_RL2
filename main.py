@@ -13,11 +13,15 @@
 #   brew install glew
 
 import gym
-# import numpy as np
-# import random
+import sys , getopt
 
 from random_action import Random_actions
-from qlearning import *
+from qlearning import Tabular_Q, Deep_Q
+from mcts import Mcts
+from experiments import *
+
+import pandas as pd
+
 
 # pip3 install -r requirements.txt
 
@@ -67,19 +71,93 @@ class Cart:
         return index
 
 
-def main():
+def main(argv):
+    import pandas as pd
 
-    d = Cart()
     # Call the random_actions simulation
     # Random_actions(gym)
 
     gamma = 0.7     # discount factor
     alpha = 0.2     # learning rate
     epsilon = 0.1   # epsilon greedy
+    
+    iterations = 1e4
 
-    Tabular_Q(gym, d, gamma, alpha, epsilon)
-    # Q_learning()
-    exit()
+    # Substantiate Cart in order to pass to other functions
+    cart = Cart()
+
+    exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+
+    random_actions = Random_actions()
+    tabular_q = Tabular_Q()
+
+    # exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+
+    for i, arg in enumerate(argv):
+
+        if arg == "random":
+            result = random_actions.main(gym, exp, iterations)
+
+        elif arg == "tabular":
+            result = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+
+        elif arg == "deep":
+            result = Deep_Q(gym, exp, cart, gamma, alpha, epsilon, iterations)
+
+        elif arg == "mcts":
+            result = Mcts(gym, exp, cart)
+
+        elif arg == "exp1":
+            # Here we pitch Random versus Tabular
+            df_rnd = random_actions.main(gym, exp, iterations)
+
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+
+            df_rnd = df_rnd.rename({'avg_timesteps': 'timesteps_rnd'}, axis=1)
+            df_tab = df_tab.rename({'avg_timesteps': 'timesteps_tab'}, axis=1)
+
+            result = pd.merge(df_rnd, df_tab, how="inner", on='episodes')
+
+            exp.Create_line_plot(result, 'filename')
+
+        elif arg == "exp2":
+            
+            result = exp.df
+
+            epsilon_list = [0.01, 0.1, 1]
+            
+            for epsilon in epsilon_list:
+                # Start new experiment
+                exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+                # Run it
+                df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+                
+                ep_col_name = 'timesteps_e_' + str(epsilon)
+
+                df_tab = df_tab.rename({'avg_timesteps': ep_col_name}, axis=1)
+
+                result = pd.merge(df_tab, result, how="left", on='episodes')
+                
+            result = result.drop(['avg_timesteps'], axis=1) 
+            
+            print(result)
+
+            exp.Create_line_plot(result, 'filename')
+
+            # print(result)
+            exit(0)
+
+
+        else:
+            print("Invalid argument.")
+            exit(1)
+
+        print(result)
+
+
+
+
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

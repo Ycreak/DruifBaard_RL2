@@ -1,17 +1,13 @@
 import numpy as np
 import random 
+import pandas
 
-# class Q_learning:
-#     # Q-learning parameters
-
-    
-#     def __init__(self, gym, cart):
-#         self.gym = gym
-#         self.cart = cart
+class Deep_Q():
+    def main(self, gym, exp, cart, gamma, alpha, epsilon, iterations=1e6):
+        pass
 
 class Tabular_Q():
-    def __init__(self, gym, cart, gamma, alpha, epsilon):
-        # super().__init__(gym, cart)
+    def main(self, gym, exp, cart, gamma, alpha, epsilon, iterations=1e6):
     
         # The matrix
         Q = np.zeros([cart.STATE_SIZE, cart.ACTION_SIZE])
@@ -30,7 +26,7 @@ class Tabular_Q():
 
         total_timesteps = 0
         total_timesteps_n_episodes = 0
-        for episode in range(1000000):
+        for episode in range(int(iterations)):
             done = False
             t = 0
 
@@ -59,8 +55,17 @@ class Tabular_Q():
 
             # Print statistics
             if episode % print_per_n == 0:
+                avg_timesteps = total_timesteps / (episode+1) 
+
+
+
                 print("Episode {} finished after {} timesteps".format(episode, t+1))
-                print("Average timesteps {}".format(total_timesteps / (episode+1)))
+                print("Average timesteps {}".format(avg_timesteps))
                 print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
                 total_timesteps_n_episodes = 0
+           
+                exp.Episode_time(episode, avg_timesteps)
+
+
         env.close()
+        return exp.df
