@@ -4,7 +4,7 @@ import pandas
 
 class Deep_Q():
     def main(self, gym, exp, cart, gamma, alpha, epsilon, iterations=1e6):
-        pass
+        return
 
 class Tabular_Q():
     def main(self, gym, exp, cart, gamma, alpha, epsilon, iterations=1e6):

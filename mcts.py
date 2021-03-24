@@ -1,3 +1,3 @@
 class Mcts:
-    def __init__(self, gym, exp, cart):
-        pass
+    def main(self, gym, exp, cart):
+        return

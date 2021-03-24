@@ -12,18 +12,22 @@
 #   brew install glfw3
 #   brew install glew
 
+# To install on Linux, run the following:
+#   $ pip3 install -r requirements.txt
+
+# Library Imports
 import gym
 import sys , getopt
+import pandas as pd
 
+# Class Imports
 from random_action import Random_actions
 from qlearning import Tabular_Q, Deep_Q
 from mcts import Mcts
-from experiments import *
-
-import pandas as pd
+from experiments import Experiment_episode_timesteps
 
 
-# pip3 install -r requirements.txt
+
 
 class Cart:
     # These are the limits we use for the observation values
@@ -74,19 +78,22 @@ class Cart:
 def main(argv):
     import pandas as pd #FIXME: why does it not work if i dont put it here?
 
+    # Function parameters
     gamma = 0.7     # discount factor
     alpha = 0.2     # learning rate
     epsilon = 0.1   # epsilon greedy
     
-    iterations = 1e5
+    iterations = 1e4
 
     # Substantiate Cart in order to pass to other functions
     cart = Cart()
-
+    # Substantiate an experiment
     exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-
+    # Substantiate the different programs
     random_actions = Random_actions()
     tabular_q = Tabular_Q()
+    deep_q = Deep_Q()
+    mcts = Mcts()
 
     # exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
 
@@ -99,10 +106,10 @@ def main(argv):
             result = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
 
         elif arg == "deep":
-            result = Deep_Q(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            result = deep_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
 
         elif arg == "mcts":
-            result = Mcts(gym, exp, cart)
+            result = mcts.main(gym, exp, cart)
 
         elif arg == "exp1":
             # Here we pitch Random versus Tabular
@@ -112,12 +119,12 @@ def main(argv):
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
 
-            df_rnd = df_rnd.rename({'avg_timesteps': 'timesteps_rnd'}, axis=1)
-            df_tab = df_tab.rename({'avg_timesteps': 'timesteps_tab'}, axis=1)
+            df_rnd = df_rnd.rename({'avg_timesteps': 'random'}, axis=1)
+            df_tab = df_tab.rename({'avg_timesteps': 'tabular'}, axis=1)
 
             result = pd.merge(df_rnd, df_tab, how="inner", on='episodes')
 
-            exp.Create_line_plot(result, 'filename')
+            exp.Create_line_plot(result, 'filename', 'Random versus Tabular')
 
         elif arg == "exp2_e":
             # Here we compare results if parameters are tweaked
@@ -130,14 +137,14 @@ def main(argv):
                 exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
                 df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
                 # Provide the correct collumn name
-                ep_col_name = 'timesteps_e_' + str(epsilon)
+                ep_col_name = 'e_' + str(epsilon)
                 df_tab = df_tab.rename({'avg_timesteps': ep_col_name}, axis=1)
                 # Merge the new df with the old one
                 result = pd.merge(df_tab, result, how="left", on='episodes')
             # Drop the column we do not need    
             result = result.drop(['avg_timesteps'], axis=1) 
             # Create the plot
-            exp.Create_line_plot(result, 'filename')
+            exp.Create_line_plot(result, 'filename', 'Tweaking Epsilon')
             result = result[0:0]
 
         elif arg == "exp2_a":
@@ -149,7 +156,7 @@ def main(argv):
                 exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
                 df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
                 # Provide the correct collumn name
-                a_col_name = 'timesteps_a_' + str(alpha)
+                a_col_name = 'a_' + str(alpha)
                 df_tab = df_tab.rename({'avg_timesteps': a_col_name}, axis=1)
                 # Merge the new df with the old one
                 result = pd.merge(df_tab, result, how="left", on='episodes')
@@ -159,7 +166,7 @@ def main(argv):
             except:
                 print('no drop avg_timesteps')
             # Create the plot
-            exp.Create_line_plot(result, 'alpha_experiment')
+            exp.Create_line_plot(result, 'alpha_experiment', 'Tweaking Alpha')
             result = result[0:0]
 
         elif arg == "exp2_g":
@@ -171,7 +178,7 @@ def main(argv):
                 exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
                 df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
                 # Provide the correct collumn name
-                g_col_name = 'timesteps_g_' + str(gamma)
+                g_col_name = 'g_' + str(gamma)
                 df_tab = df_tab.rename({'avg_timesteps': g_col_name}, axis=1)
                 # Merge the new df with the old one
                 result = pd.merge(df_tab, result, how="left", on='episodes')
@@ -181,12 +188,12 @@ def main(argv):
             except:
                 print('no drop avg_timesteps')            
             # Create the plot
-            exp.Create_line_plot(result, 'gamma_experiment')
+            exp.Create_line_plot(result, 'gamma_experiment', 'Tweaking Gamma')
             result = result[0:0]
 
             # exit(0)
         elif arg == "exp3":
-            # Pitch Tabular versus Q
+            # Pitch Tabular versus Deep
             pass
 
         elif arg == "exp4":

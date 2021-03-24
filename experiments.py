@@ -19,7 +19,7 @@ class Experiment_episode_timesteps:
   def Plot_episode_timesteps(self, df):
     pass
 
-  def Create_line_plot(self, df, filename):
+  def Create_line_plot(self, df, filename, _title):
     """Simple function that creates a line plot of the given dataframe.
 
     Args:
@@ -31,16 +31,25 @@ class Experiment_episode_timesteps:
     # Y Cap.
     trueskill_max = 50
 
-    # print(df)
+    print(df)
 
-    df = df.drop(['episodes'], axis=1) #TODO: this should be the index!
+    # exit(0)
 
-    ax = df.plot.line(title='Line plot')
+    # myList = df['episodes'].max()
+    # print(myList)
+
+    # df = df.drop(['episodes'], axis=1) #TODO: this should be the index!
+
+
+    ax = df.plot.line(title=_title, x='episodes')
     
-    ax.set_xlabel("Number of episodes (in thousands)")
+    ax.set_xlabel("Number of episodes")
     ax.set_ylabel("Number of timesteps")
     
-    # plt.xlim([0, self.tourney_rounds])
+    plt.ticklabel_format(axis="x", style="sci", scilimits=(0,0))
+
+    # ax.set_xticklabels(myList, rotation=0)
+    plt.xlim([0, df['episodes'].max()])
     # plt.ylim([0, trueskill_max])
 
     # To make X axis nice integers
