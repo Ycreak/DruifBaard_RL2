@@ -26,20 +26,6 @@ class Experiment_episode_timesteps:
         df (pd df): dataframe with TrueSkill scores of the bots
         filename (string): filename to be given
     """
-    from matplotlib.ticker import MaxNLocator
-
-    # Y Cap.
-    trueskill_max = 50
-
-    print(df)
-
-    # exit(0)
-
-    # myList = df['episodes'].max()
-    # print(myList)
-
-    # df = df.drop(['episodes'], axis=1) #TODO: this should be the index!
-
 
     ax = df.plot.line(title=_title, x='episodes')
     
@@ -48,7 +34,6 @@ class Experiment_episode_timesteps:
     
     plt.ticklabel_format(axis="x", style="sci", scilimits=(0,0))
 
-    # ax.set_xticklabels(myList, rotation=0)
     plt.xlim([0, df['episodes'].max()])
     # plt.ylim([0, trueskill_max])
 

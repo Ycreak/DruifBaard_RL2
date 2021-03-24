@@ -76,14 +76,13 @@ class Cart:
 
 
 def main(argv):
-    import pandas as pd #FIXME: why does it not work if i dont put it here?
 
     # Function parameters
     gamma = 0.7     # discount factor
     alpha = 0.2     # learning rate
     epsilon = 0.1   # epsilon greedy
     
-    iterations = 1e4
+    iterations = 1e6
 
     # Substantiate Cart in order to pass to other functions
     cart = Cart()
@@ -94,8 +93,6 @@ def main(argv):
     tabular_q = Tabular_Q()
     deep_q = Deep_Q()
     mcts = Mcts()
-
-    # exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
 
     for i, arg in enumerate(argv):
 
@@ -119,6 +116,7 @@ def main(argv):
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
 
+            # Fix the dataframe names
             df_rnd = df_rnd.rename({'avg_timesteps': 'random'}, axis=1)
             df_tab = df_tab.rename({'avg_timesteps': 'tabular'}, axis=1)
 
@@ -128,7 +126,7 @@ def main(argv):
 
         elif arg == "exp2_e":
             # Here we compare results if parameters are tweaked
-            result = exp.df
+            result = exp.df # To allow merging of only one dataframe
 
             epsilon_list = [0.01, 0.1, 1]
             
