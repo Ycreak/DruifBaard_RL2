@@ -155,11 +155,14 @@ class Deep_Q():
         
 
 class Tabular_Q():
-    def main(self, gym, exp, cart, gamma, alpha, epsilon, iterations=1e6):
+    def main(self, gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations=1e6):
           
         # Initialise the matrix with ones and zeroes
-        Q = np.random.choice([0, 1], size=(cart.STATE_SIZE,cart.ACTION_SIZE), p=[.5,.5])
-        
+        if zeroes:
+            Q = np.zeros([cart.STATE_SIZE, cart.ACTION_SIZE])
+        else:
+            Q = np.random.choice([0, 1], size=(cart.STATE_SIZE,cart.ACTION_SIZE), p=[.5,.5])
+
         print("Total matrix size: {}x{}".format(cart.STATE_SIZE, cart.ACTION_SIZE))
         print("Estimated GB used: {}GB".format(Q.nbytes/1000000000))
         print_per_n = 1000

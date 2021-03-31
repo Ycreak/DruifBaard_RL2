@@ -47,7 +47,7 @@ class Experiment_episode_timesteps:
     plt.ticklabel_format(axis="x", style="sci", scilimits=(0,0))
 
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.savefig('plots/{0}.png'.format(filename))
+    plt.savefig('plots/{0}-{1}.png'.format(filename, datetime.datetime.now().strftime("%H:%M:%S")))
 
     plt.show()
 
@@ -81,5 +81,5 @@ class Experiment_episode_timesteps:
     # To make X axis nice integers
     # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-    plt.savefig('plots/{0}.png'.format(filename))
+    plt.savefig('plots/{0}-{1}.png'.format(filename, datetime.datetime.now().strftime("%H:%M:%S")))
     plt.show()

@@ -38,7 +38,9 @@ def main(argv):
     alpha = 0.2     # learning rate 
     epsilon = 0.1   # epsilon greedy
     
-    iterations = 3e3
+    zeroes = False
+
+    iterations = 1e6
 
     # Substantiate Cart in order to pass to other functions
     cart = Cart()
@@ -56,7 +58,8 @@ def main(argv):
             result = random_actions.main(gym, exp, iterations)
 
         elif arg == "tabular":
-            result = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            result = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
+            exp.Create_line_plot(result, 'filename', 'Tabular')
 
         elif arg == "deep":
             result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
@@ -70,7 +73,7 @@ def main(argv):
             df_rnd = random_actions.main(gym, exp, iterations)
 
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
 
             # Fix the dataframe names
             df_rnd = df_rnd.rename({'avg_timesteps': 'random'}, axis=1)
@@ -78,34 +81,41 @@ def main(argv):
 
             result = pd.merge(df_rnd, df_tab, how="inner", on='episodes')
 
-            exp.Create_line_plot(result, 'filename', 'Random versus Tabular')
+            exp.Create_line_plot(result, 'Tabular_vs_Random', 'Random versus Tabular')
+
+        elif arg == "exp1_zeroes":
+            # Here we pitch Tabular with zeroes vs Tabular with zeroes and ones
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            df_ones = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
+
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            df_zeroes = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, True, iterations)
+
+            # Fix the dataframe names
+            df_ones = df_ones.rename({'avg_timesteps': 'ones'}, axis=1)
+            df_zeroes = df_zeroes.rename({'avg_timesteps': 'zeroes'}, axis=1)
+
+            result = pd.merge(df_ones, df_zeroes, how="inner", on='episodes')
+
+            exp.Create_line_plot(result, 'Zeroes_vs_Ones', 'Zeroes versus Zeroes and Ones')
 
         elif arg == "exp1_large":
             # Run the experiment with a small table
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
             df_tab = df_tab.rename({'avg_timesteps': 'tab1'}, axis=1)
             # Change the parameters and run again
 
             cart = Cart(_STEP_POLE_ANGLE = 0.1, _STEP_POLE_ROTATION = 0.1, _round_parameter = 1)
    
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
             df_tab2 = df_tab2.rename({'avg_timesteps': 'tab2'}, axis=1)
             # Merge results
             result = pd.merge(df_tab, df_tab2, how="inner", on='episodes')
-            # Rinse and repeat
-            # cart.STEP_POLE_ANGLE = 0.01
-            # cart.STEP_POLE_ROTATION = 0.01
-            # cart.round_parameter = 2
-    
-            # exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            # df_tab3 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
-            # df_tab3 = df_tab3.rename({'avg_timesteps': 'tab3'}, axis=1)
 
-            # result = pd.merge(result, df_tab3, how="inner", on='episodes')
             # Plot the line
-            exp.Create_line_plot(result, 'filename', 'Larger Table runs')
+            exp.Create_line_plot(result, 'Tabular_versus_Larger', 'Larger Table runs')
 
         elif arg == "exp2_e":
             # Here we compare results if parameters are tweaked
