@@ -141,20 +141,25 @@ class Deep_Q():
                 print("Episode {} finished after {} timesteps".format(i, t+1))
                 print("Average timesteps {}".format(avg_timesteps))
                 print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
+                
+                exp.Episode_time(i, (total_timesteps_n_episodes / print_per_n))
+                
                 total_timesteps_n_episodes = 0
-                exp.Episode_time(i, avg_timesteps)
 
             losses_list.append(losses/ep_len), reward_list.append(rew), episode_len_list.append(ep_len), epsilon_list.append(epsilon)
-        return exp.df
+            
+        # exp.Loss_reward(losses_list, reward_list)
+        
+        return exp.df, losses_list, reward_list
         
         
 
 class Tabular_Q():
     def main(self, gym, exp, cart, gamma, alpha, epsilon, iterations=1e6):
-    
-        # The matrix
-        Q = np.zeros([cart.STATE_SIZE, cart.ACTION_SIZE])
-
+          
+        # Initialise the matrix with ones and zeroes
+        Q = np.random.choice([0, 1], size=(cart.STATE_SIZE,cart.ACTION_SIZE), p=[.5,.5])
+        
         print("Total matrix size: {}x{}".format(cart.STATE_SIZE, cart.ACTION_SIZE))
         print("Estimated GB used: {}GB".format(Q.nbytes/1000000000))
         print_per_n = 1000
@@ -203,10 +208,10 @@ class Tabular_Q():
                 print("Episode {} finished after {} timesteps".format(episode, t+1))
                 print("Average timesteps {}".format(avg_timesteps))
                 print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
-                total_timesteps_n_episodes = 0
            
-                exp.Episode_time(episode, avg_timesteps)
+                exp.Episode_time(episode, (total_timesteps_n_episodes / print_per_n))
 
+                total_timesteps_n_episodes = 0
 
         env.close()
         return exp.df

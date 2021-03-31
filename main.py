@@ -38,7 +38,7 @@ def main(argv):
     alpha = 0.2     # learning rate 
     epsilon = 0.1   # epsilon greedy
     
-    iterations = 1e6
+    iterations = 3e3
 
     # Substantiate Cart in order to pass to other functions
     cart = Cart()
@@ -59,7 +59,7 @@ def main(argv):
             result = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
 
         elif arg == "deep":
-            result = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
+            result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
 
         elif arg == "mcts":
             result = mcts.main(gym, exp, cart)
@@ -79,6 +79,33 @@ def main(argv):
             result = pd.merge(df_rnd, df_tab, how="inner", on='episodes')
 
             exp.Create_line_plot(result, 'filename', 'Random versus Tabular')
+
+        elif arg == "exp1_large":
+            # Run the experiment with a small table
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            df_tab = df_tab.rename({'avg_timesteps': 'tab1'}, axis=1)
+            # Change the parameters and run again
+
+            cart = Cart(_STEP_POLE_ANGLE = 0.1, _STEP_POLE_ROTATION = 0.1, _round_parameter = 1)
+   
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            df_tab2 = df_tab2.rename({'avg_timesteps': 'tab2'}, axis=1)
+            # Merge results
+            result = pd.merge(df_tab, df_tab2, how="inner", on='episodes')
+            # Rinse and repeat
+            # cart.STEP_POLE_ANGLE = 0.01
+            # cart.STEP_POLE_ROTATION = 0.01
+            # cart.round_parameter = 2
+    
+            # exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            # df_tab3 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, iterations)
+            # df_tab3 = df_tab3.rename({'avg_timesteps': 'tab3'}, axis=1)
+
+            # result = pd.merge(result, df_tab3, how="inner", on='episodes')
+            # Plot the line
+            exp.Create_line_plot(result, 'filename', 'Larger Table runs')
 
         elif arg == "exp2_e":
             # Here we compare results if parameters are tweaked
@@ -147,8 +174,15 @@ def main(argv):
 
             # exit(0)
         elif arg == "exp3":
-            # Pitch Tabular versus Deep
-            pass
+            # Deep.            
+            result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
+            
+            # Create an episode/timesteps plot
+            exp.Create_line_plot(result, 'deepq', 'Deep-Q Learning')
+            # Create an loss/reward plot
+            exp.Loss_reward(losses, reward, 'deepq_loss')
+            
+            # pass
 
         elif arg == "exp4":
             # MCTS and tweaks
@@ -173,4 +207,5 @@ def main(argv):
 
 
 if __name__ == "__main__":
+      
     main(sys.argv[1:])
