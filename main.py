@@ -23,13 +23,9 @@ import pandas as pd
 # Class Imports
 from random_action import Random_actions
 from qlearning import Tabular_Q, Deep_Q
-from mcts import Mcts
+from mcpg import Mcpg, Policy_Network
 from utils import Cart
 from experiments import Experiment_episode_timesteps
-
-
-
-
 
 def main(argv):
 
@@ -39,6 +35,8 @@ def main(argv):
     epsilon = 0.1   # epsilon greedy
     
     iterations = 1e6
+    max_steps = 1e4 
+    hidden_size = 128
 
     # Substantiate Cart in order to pass to other functions
     cart = Cart()
@@ -48,7 +46,7 @@ def main(argv):
     random_actions = Random_actions()
     tabular_q = Tabular_Q()
     deep_q = Deep_Q()
-    mcts = Mcts()
+    mcpg = Mcpg()
 
     for i, arg in enumerate(argv):
 
@@ -61,8 +59,8 @@ def main(argv):
         elif arg == "deep":
             result = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
 
-        elif arg == "mcts":
-            result = mcts.main(gym, exp, cart)
+        elif arg == "mcpg":
+            result = mcpg.main(gym, exp, cart, alpha=3e-4, gamma=0.9, iterations=5000, max_steps=10000, hidden_size=hidden_size)
 
         elif arg == "exp1":
             # Here we pitch Random versus Tabular
@@ -167,10 +165,6 @@ def main(argv):
             exit(1)
 
         print(result)
-
-
-
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
