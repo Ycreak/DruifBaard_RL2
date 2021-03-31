@@ -86,7 +86,7 @@ def main(argv):
         elif arg == "exp1_zeroes":
             # Here we pitch Tabular with zeroes vs Tabular with zeroes and ones
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_ones = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
+            df_ones = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, False, iterations)
 
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_zeroes = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, True, iterations)
