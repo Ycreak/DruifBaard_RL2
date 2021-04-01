@@ -33,11 +33,14 @@ def main(argv):
     gamma = 0.7     # discount factor
     alpha = 0.2     # learning rate 
     epsilon = 0.1   # epsilon greedy
-    
-    zeroes = False
 
+    # Initialises np with zeroes if true, otherwise with both zeroes and ones
+    zeroes = False
+    # Number of iterations for all implementations
     iterations = 1e6
+    # Maximum amount of steps per episode (used in MCPG)
     max_steps = 1e4 
+    #TODO: ???
     hidden_size = 128
 
     # Substantiate Cart in order to pass to other functions
@@ -65,13 +68,15 @@ def main(argv):
         elif arg == "mcpg":
             result = mcpg.main(gym, exp, cart, alpha=3e-4, gamma=0.9, iterations=5000, max_steps=10000, hidden_size=hidden_size)
 
-        elif arg == "exp1":
+        elif arg == "exp_rnd_tab":
             # Here we pitch Random versus Tabular
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_rnd = random_actions.main(gym, exp, iterations)
+            df_rnd = df_rnd.drop(['avg_timesteps_last'], axis=1) 
 
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
+            df_tab = df_tab.drop(['avg_timesteps_last'], axis=1) 
 
             # Fix the dataframe names
             df_rnd = df_rnd.rename({'avg_timesteps': 'random'}, axis=1)
@@ -81,7 +86,7 @@ def main(argv):
 
             exp.Create_line_plot(result, 'Tabular_vs_Random', 'Random versus Tabular')
 
-        elif arg == "exp1_zeroes":
+        elif arg == "exp_zeroes":
             # Here we pitch Tabular with zeroes vs Tabular with zeroes and ones
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
             df_ones = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, False, iterations)
@@ -97,25 +102,26 @@ def main(argv):
 
             exp.Create_line_plot(result, 'Zeroes_vs_Ones', 'Zeroes versus Zeroes and Ones')
 
-        elif arg == "exp1_large":
-            # Run the experiment with a small table
+        elif arg == "exp_large":
+            # Here we compare a small table with a larger table
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
+            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, 1e6)
             df_tab = df_tab.rename({'avg_timesteps': 'tab1'}, axis=1)
+            df_tab = df_tab.drop(['avg_timesteps_last'], axis=1) 
             # Change the parameters and run again
-
             cart = Cart(_STEP_POLE_ANGLE = 0.1, _STEP_POLE_ROTATION = 0.1, _round_parameter = 1)
    
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations)
+            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, 1e6)
             df_tab2 = df_tab2.rename({'avg_timesteps': 'tab2'}, axis=1)
+            df_tab2 = df_tab2.drop(['avg_timesteps_last'], axis=1) 
             # Merge results
             result = pd.merge(df_tab, df_tab2, how="inner", on='episodes')
 
             # Plot the line
             exp.Create_line_plot(result, 'Tabular_versus_Larger', 'Larger Table runs')
 
-        elif arg == "exp2_e":
+        elif arg == "exp_tab_e":
             # Here we compare results if parameters are tweaked
             result = exp.df # To allow merging of only one dataframe
 
@@ -136,7 +142,7 @@ def main(argv):
             exp.Create_line_plot(result, 'filename', 'Tweaking Epsilon')
             result = result[0:0]
 
-        elif arg == "exp2_a":
+        elif arg == "exp_tab_a":
             result = exp.df
             alpha_list = [0.2, 0.5, 0.8]
 
@@ -158,8 +164,8 @@ def main(argv):
             exp.Create_line_plot(result, 'alpha_experiment', 'Tweaking Alpha')
             result = result[0:0]
 
-        elif arg == "exp2_g":
-            result = exp.df            
+        elif arg == "exp_tab_g":
+            result = exp.df
             gamma_list = [0.1, 0.5, 0.7]
 
             for gamma in gamma_list:
@@ -180,36 +186,45 @@ def main(argv):
             exp.Create_line_plot(result, 'gamma_experiment', 'Tweaking Gamma')
             result = result[0:0]
 
-            # exit(0)
-        elif arg == "exp3":
-            # Deep.            
-            result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
-            
+        elif arg == "exp_deep":
+            # Here we run an experiment with Deep-Q learning.            
+            result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=1e4)
             # Create an episode/timesteps plot
             exp.Create_line_plot(result, 'deepq', 'Deep-Q Learning')
             # Create an loss/reward plot
             exp.Loss_reward(losses, reward, 'deepq_loss')
+
+        elif arg == "exp_mcpg":
+            result = mcpg.main(gym, exp, cart, alpha=3e-4, gamma=0.9, iterations=500, max_steps=10000, hidden_size=hidden_size)
+            print(result)
+            # Create an episode/timesteps plot
+            exp.Create_line_plot(result, 'mcpg', 'Monte Carlo Policy Gradient')
+        
+        elif arg == "exp_all":
+            df_mcpg = mcpg.main(gym, exp, cart, alpha=3e-4, gamma=0.9, iterations=5000, max_steps=10000, hidden_size=hidden_size)
+            exp.Save_df(df_mcpg, 'exp_all_mcpg')
+
+            df_deep, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=5000)
+            exp.Save_df(df_deep, 'exp_all_deep')
             
-            # pass
-
-        elif arg == "exp4":
-            # MCTS and tweaks
-            pass
-
-        elif arg == "exp5":
-            # MCTS versus Q
-            pass
-
-        elif arg == "exp6":
-            # Placeholder
-            pass
+            df_mcpg = df_mcpg.drop(['avg_timesteps_last'], axis=1) 
+            df_deep = df_deep.drop(['avg_timesteps_last'], axis=1) 
+            
+            df_mcpg = df_mcpg.rename({'avg_timesteps': 'avg_timesteps_mcpg'}, axis=1)
+            # df_mcpg = df_mcpg.rename({'avg_timesteps_last': 'avg_timesteps_last_mcpg'}, axis=1)
+            df_deep = df_deep.rename({'avg_timesteps': 'avg_timesteps_deep'}, axis=1)
+            # df_deep = df_deep.rename({'avg_timesteps_last': 'avg_timesteps_last_deep'}, axis=1)
+            
+            
+            # Merge the new df with the old one
+            result = pd.merge(df_mcpg, df_deep, how="left", on='episodes')
+            # Create the plot
+            exp.Create_line_plot(result, 'deep_mcpg', 'DeepQ versus MCPG')
 
         else:
             print("Invalid argument.")
             exit(1)
 
-        print(result)
 
 if __name__ == "__main__":
-      
     main(sys.argv[1:])

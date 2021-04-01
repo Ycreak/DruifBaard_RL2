@@ -30,7 +30,8 @@ class Random_actions:
                 print("Episode {} finished after {} timesteps".format(episode, t+1))
                 print("Average timesteps {}\n".format(avg_timesteps))
             
-                exp.Episode_time(episode, avg_timesteps)
+                exp.Episode_time(episode, avg_timesteps, 0)
+                # exp.Episode_time(episode, avg_timesteps)
 
 
 

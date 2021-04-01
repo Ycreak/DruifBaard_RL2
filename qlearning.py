@@ -142,7 +142,8 @@ class Deep_Q():
                 print("Average timesteps {}".format(avg_timesteps))
                 print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
                 
-                exp.Episode_time(i, (total_timesteps_n_episodes / print_per_n))
+                exp.Episode_time(i, avg_timesteps, (total_timesteps_n_episodes / print_per_n))
+                # exp.Episode_time(i, (total_timesteps_n_episodes / print_per_n))
                 
                 total_timesteps_n_episodes = 0
 
@@ -212,7 +213,8 @@ class Tabular_Q():
                 print("Average timesteps {}".format(avg_timesteps))
                 print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
            
-                exp.Episode_time(episode, (total_timesteps_n_episodes / print_per_n))
+                exp.Episode_time(episode, avg_timesteps, (total_timesteps_n_episodes / print_per_n))
+                # exp.Episode_time(episode, (total_timesteps_n_episodes / print_per_n))
 
                 total_timesteps_n_episodes = 0
 

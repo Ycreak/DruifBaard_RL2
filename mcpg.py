@@ -34,7 +34,7 @@ class Mcpg:
         env = gym.make('CartPole-v0')
         policy_net = Policy_Network(env.observation_space.shape[0], env.action_space.n, hidden_size, alpha)
         
-        print_per_n = 10
+        print_per_n = 100
         numsteps = []
         avg_numsteps = []
         all_rewards = []
@@ -51,7 +51,7 @@ class Mcpg:
 
             while go_on:
 
-                env.render()
+                # env.render()
                 action, log_prob = policy_net.get_action(state)
 
                 new_state, reward, done, _ = env.step(action)
@@ -76,11 +76,11 @@ class Mcpg:
                 print("Episode {} finished after {} timesteps".format(episode, steps + 1))
                 print("Average timesteps {}".format(avg_timesteps))
                 print("Average timesteps of last {} episodes: {}\n".format(print_per_n, total_timesteps_n_episodes / print_per_n))
-                total_timesteps_n_episodes = 0
+                exp.Episode_time(episode, avg_timesteps, (total_timesteps_n_episodes / print_per_n))
             
-                exp.Episode_time(episode, avg_timesteps)
+                total_timesteps_n_episodes = 0
         
-        return
+        return exp.df
     
     def update_policy(self, policy_network, steps, log_probs, gamma):
         

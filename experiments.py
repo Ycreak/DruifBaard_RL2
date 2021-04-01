@@ -6,12 +6,17 @@ class Experiment_episode_timesteps:
   def __init__(self, _columns):
     self.df = pd.DataFrame(columns = _columns)
 
-  def Episode_time(self, episode, avg_timesteps):
+  def Episode_time(self, episode, avg_timesteps, avg_timesteps_last):
     new_line = {}
     new_line["episodes"] = episode        
     new_line["avg_timesteps"] = avg_timesteps
+    new_line["avg_timesteps_last"] = avg_timesteps_last
 
     self.df = self.df.append(new_line, ignore_index=True)
+
+  def Save_df(self, df, file):
+    name = './csv/' + file + '.csv'
+    df.to_csv(name, index = False, header=True)
 
   def Loss_reward(self, loss, reward, filename):
     
