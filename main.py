@@ -35,7 +35,7 @@ def main(argv):
     epsilon = 0.1   # epsilon greedy
 
     # Initialises np with zeroes if true, otherwise with both zeroes and ones
-    zeroes = False
+    zeroes = True
     # Number of iterations for all implementations
     iterations = 1e6
     # Maximum amount of steps per episode (used in MCPG)
@@ -105,14 +105,14 @@ def main(argv):
         elif arg == "exp_large":
             # Here we compare a small table with a larger table
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, 1e6)
+            df_tab = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, True, 1e6)
             df_tab = df_tab.rename({'avg_timesteps': 'tab1'}, axis=1)
             df_tab = df_tab.drop(['avg_timesteps_last'], axis=1) 
             # Change the parameters and run again
             cart = Cart(_STEP_POLE_ANGLE = 0.1, _STEP_POLE_ROTATION = 0.1, _round_parameter = 1)
    
             exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
-            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, zeroes, 1e6)
+            df_tab2 = tabular_q.main(gym, exp, cart, gamma, alpha, epsilon, True, 1e6)
             df_tab2 = df_tab2.rename({'avg_timesteps': 'tab2'}, axis=1)
             df_tab2 = df_tab2.drop(['avg_timesteps_last'], axis=1) 
             # Merge results
