@@ -1,4 +1,5 @@
 class Cart:
+    # Class used for the cart
     def __init__(self, _STEP_POLE_ANGLE = 1, _STEP_POLE_ROTATION = 1, _round_parameter = 0):
 
         # These are the limits we use for the observation values

@@ -1,4 +1,9 @@
-#DruifBaard_RL2
+# Reinforcement Learning
+# Leiden University 2021
+# Assignment 2
+# Philippe Bors S1773585
+# Job van der Zwaag S1893378
+# Luuk Nolden S1370898
 
 To install dependencies, run the following command:
 
