@@ -10,7 +10,17 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import sys
 
 class Policy_Network(nn.Module):
+
     def __init__(self, num_inputs, num_actions, hidden_size, alpha):
+        """Initialize the policy network layers
+
+        Args:
+            num_inputs (int): the number of elements of the input
+            num_actions (int): the number of elements of the output
+            hidden_size (int): the number of elements of the hidden state
+            alpha (int): the learning rate
+        """ 
+
         super(Policy_Network, self).__init__()
         self.num_actions = num_actions
         self.linear1 = nn.Linear(num_inputs, hidden_size)
@@ -18,19 +28,58 @@ class Policy_Network(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
 
     def forward(self, state):
+        """Return the probabilities of a state
+
+        Args:
+            state (array of ints): state of the cartpole
+
+        Returns:
+            [array of ints]: probabilities of the state
+        """  
+
         x = F.relu(self.linear1(state))
         x = F.softmax(self.linear2(x), dim=1)
+
         return x 
     
     def get_action(self, state):
+        """Returns the best action to take for the state
+
+        Args:
+            state (array of ints): state of the cartpole
+
+        Returns:
+            highest_prob_action (bool): best action to take
+            log_prob: the logarithm of the probability of the highest_prob_action 
+        """
+
         state = torch.from_numpy(state).float().unsqueeze(0)
         probs = self.forward(Variable(state))
         highest_prob_action = np.random.choice(self.num_actions, p=np.squeeze(probs.detach().numpy()))
         log_prob = torch.log(probs.squeeze(0)[highest_prob_action])
+
         return highest_prob_action, log_prob
 
 class Mcpg:
+    """Class for the Monte-Carlo Policy Gradients
+    """    
     def main(self, gym, exp, cart, alpha, gamma, iterations, max_steps, hidden_size):
+        """Main function of the MCPG class
+
+        Args:
+            gym: Gym toolkit
+            exp (Experiment_episode_timesteps object): to take care of recording results
+            cart (Cart object): the cart
+            alpha (int): the learning rate
+            gamma (int): the dicount factor
+            iterations (int): the amount of episodes to run 
+            max_steps (int): the maximum steps for an episode
+            hidden_size (int): the number of elements of the hidden state
+
+        Returns:
+            [type]: [description]
+        """        
+
         env = gym.make('CartPole-v0')
         policy_net = Policy_Network(env.observation_space.shape[0], env.action_space.n, hidden_size, alpha)
         
@@ -83,9 +132,17 @@ class Mcpg:
         return exp.df
     
     def update_policy(self, policy_network, steps, log_probs, gamma):
-        
+        """Update the policy network with the logged results
+
+        Args:
+            policy_network (Policy_Network object): the policy network
+            steps (int): the number of steps taken in the episode
+            log_probs (array): the logarithms of the probabilities of the highest_prob_actions
+            gamma (int): the dicount factor
+        """        
         discounted_rewards = []
 
+        #Since all rewards are 1 and the number of rewards equals the number of steps + 1
         for step in range(steps + 1):
             Gt = 0 
             pw = 0
