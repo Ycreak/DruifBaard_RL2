@@ -19,7 +19,7 @@
 import gym
 import sys , getopt
 import pandas as pd
-
+import time
 # Class Imports
 from random_action import Random_actions
 from qlearning import Tabular_Q, Deep_Q
@@ -197,11 +197,18 @@ def main(argv):
 
         elif arg == "exp_deep":
             # Here we run an experiment with Deep-Q learning.            
+
+            start_time = time.time()
+            # result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=iterations)
             result, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=1e4)
+            deep_time = time.time() - start_time
+
             # Create an episode/timesteps plot
             exp.Create_line_plot(result, 'deepq', 'Deep-Q Learning')
             # Create an loss/reward plot
             exp.Loss_reward(losses, reward, 'deepq_loss')
+
+            print(deep_time)
 
         elif arg == "exp_deep_e":
             # Here we compare results if parameters are tweaked
@@ -366,25 +373,40 @@ def main(argv):
             result = result[0:0]
 
         elif arg == "exp_all":
-            df_mcpg = mcpg.main(gym, exp, cart, alpha=3e-4, gamma=0.9, iterations=5000, max_steps=10000, hidden_size=hidden_size)
-            exp.Save_df(df_mcpg, 'exp_all_mcpg')
+            # Run all implementations against eachother
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            start_time = time.time()
+            df_mcpg = mcpg.main(gym, exp, cart, alpha=3e-4, gamma=0.9, iterations=5000, max_steps=10000, hidden_size=256)
+            mcpg_time = time.time() - start_time
 
-            df_deep, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=5000)
-            exp.Save_df(df_deep, 'exp_all_deep')
-            
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            start_time = time.time()
+            df_deep, losses, reward = deep_q.main(gym, exp, cart, gamma, alpha=1e-3, epsilon=epsilon, iterations=5000, _print_per_n=100)
+            deep_time = time.time() - start_time
+
+            exp = Experiment_episode_timesteps(["episodes", "avg_timesteps"])
+            start_time = time.time()
+            df_tab = tabular_q.main(gym, exp, cart, 0.9, 0.8, 0.1, True, 5000, _print_per_n=100)
+            tabular_time = time.time() - start_time
+
             df_mcpg = df_mcpg.drop(['avg_timesteps_last'], axis=1) 
             df_deep = df_deep.drop(['avg_timesteps_last'], axis=1) 
+            df_tab = df_tab.drop(['avg_timesteps_last'], axis=1) 
+
+            df_mcpg = df_mcpg.rename({'avg_timesteps': 'mcpg'}, axis=1)
+            df_tab = df_tab.rename({'avg_timesteps': 'tabular'}, axis=1)
+            df_deep = df_deep.rename({'avg_timesteps': 'deep'}, axis=1)
             
-            df_mcpg = df_mcpg.rename({'avg_timesteps': 'avg_timesteps_mcpg'}, axis=1)
-            # df_mcpg = df_mcpg.rename({'avg_timesteps_last': 'avg_timesteps_last_mcpg'}, axis=1)
-            df_deep = df_deep.rename({'avg_timesteps': 'avg_timesteps_deep'}, axis=1)
-            # df_deep = df_deep.rename({'avg_timesteps_last': 'avg_timesteps_last_deep'}, axis=1)
-            
-            
+
             # Merge the new df with the old one
             result = pd.merge(df_mcpg, df_deep, how="left", on='episodes')
+            result = pd.merge(result, df_tab, how="left", on='episodes')
+
+            print(result)
+            print(mcpg_time, deep_time, tabular_time)
+            
             # Create the plot
-            exp.Create_line_plot(result, 'deep_mcpg', 'DeepQ versus MCPG')
+            exp.Create_line_plot(result, 'deep_mcpg', 'Tabular versus DeepQ versus MCPG')
 
         else:
             print("Invalid argument.")
@@ -392,4 +414,5 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    print('Hello')
     main(sys.argv[1:])

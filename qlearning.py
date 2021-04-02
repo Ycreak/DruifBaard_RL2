@@ -85,8 +85,8 @@ class DQN_Agent:
         return loss.item()
 
 class Deep_Q():
-    def main(self, gym, exp, cart, gamma, alpha, epsilon=1, iterations=1e6, replay_buffer_size=256):
-        print_per_n = 1000
+    def main(self, gym, exp, cart, gamma, alpha, epsilon=1, iterations=1e6, replay_buffer_size=256, _print_per_n = 1000):
+        print_per_n = _print_per_n
         env = gym.make('CartPole-v0')
         exp_replay_size = 256
         agent = DQN_Agent(seed= 1423, layer_sizes = [4, 64, 2], lr = alpha, sync_freq = 5, exp_replay_size=replay_buffer_size)
@@ -156,7 +156,7 @@ class Deep_Q():
         
 
 class Tabular_Q():
-    def main(self, gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations=1e6):
+    def main(self, gym, exp, cart, gamma, alpha, epsilon, zeroes, iterations=1e6, _print_per_n=1000):
           
         # Initialise the matrix with ones and zeroes
         if zeroes:
@@ -166,7 +166,7 @@ class Tabular_Q():
 
         print("Total matrix size: {}x{}".format(cart.STATE_SIZE, cart.ACTION_SIZE))
         print("Estimated GB used: {}GB".format(Q.nbytes/1000000000))
-        print_per_n = 1000
+        print_per_n = _print_per_n
 
         env = gym.make('CartPole-v0')
         env.reset()

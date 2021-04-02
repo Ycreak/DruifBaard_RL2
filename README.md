@@ -18,7 +18,14 @@ To run the various experiments, use the following:
 	$ python3 main.py exp_tab_a		(to compare alpha values for tabular)
 	$ python3 main.py exp_tab_g		(to compare gamma values for tabular)
 	$ python3 main.py exp_deep		(to plot the results of Deep Q)
-	$ python3 main.py exp_mcpg		(to plot the results of MCPG)
-	$ python3 main.py exp_all		(to compare deep and MCPG)
 
+	$ python3 main.py exp_deep_a	(to compare alpha values for deep)
+	$ python3 main.py exp_deep_g	(to compare gamma values for deep)
 	$ python3 main.py exp_deep_e	(to compare epsilon values for deep)
+
+	$ python3 main.py exp_mcpg			(to plot the results of MCPG)
+	$ python3 main.py exp_mcpg_a		(to compare alpha values for mcpg)
+	$ python3 main.py exp_mcpg_g		(to compare gamma values for mcpg)
+	$ python3 main.py exp_mcpg_hidden	(to compare hidden values for mcpg)	
+	
+	$ python3 main.py exp_all			(to compare tabular, deep and MCPG)
